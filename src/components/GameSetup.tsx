@@ -23,7 +23,7 @@ export function GameSetup({ playerCount, setPlayerCount, onStartGame }: GameSetu
             <Users className="w-8 h-8 text-blue-600" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">MrWhitey</h1>
-          <p className="text-gray-600">The ultimate word guessing game</p>
+          <p className="text-gray-600">The ultimate word guessing game ()</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -37,7 +37,7 @@ export function GameSetup({ playerCount, setPlayerCount, onStartGame }: GameSetu
               min="4"
               max="10"
               value={playerCount}
-              onChange={(e) => setPlayerCount(parseInt(e.target.value) || 4)}
+              onChange={(e) => setPlayerCount(parseInt(e.target.value))}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               placeholder="Enter number of players (4-10)"
             />
@@ -62,6 +62,7 @@ export function GameSetup({ playerCount, setPlayerCount, onStartGame }: GameSetu
             <li>• Discuss and guess who has the different word</li>
             <li>• Reveal to see who was Mr. White!</li>
           </ul>
+          <h3 className="font-semibold text-gray-900 mb-2">Namatha🤙</h3>
         </div>
       </div>
     </div>
