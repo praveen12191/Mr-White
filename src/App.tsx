@@ -1,4 +1,19 @@
 import React from 'react';
+import { GameProvider } from './context/GameContext';
+import { GameContainer } from './components/GameContainer';
+import './App.css';
+
+function App() {
+  return (
+    <GameProvider>
+      <div className="App">
+        <GameContainer />
+      </div>
+    </GameProvider>
+  );
+}
+
+export default App;
 import { useGame } from './hooks/useGame';
 import { GameSetup } from './components/GameSetup';
 import { CardPicking } from './components/CardPicking';
