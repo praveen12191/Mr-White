@@ -6,11 +6,13 @@ interface DiscussionProps {
   players: Player[];
   onCardCheck: (playerId: string) => void;
   checkedCards: Set<string>;
+  currentWordPair: { normal: string; mrWhite: string };
 }
 
-export function Discussion({ players, onCardCheck, checkedCards }: DiscussionProps) {
+export function Discussion({ players, onCardCheck, checkedCards, currentWordPair }: DiscussionProps) {
   const remainingPlayers = players.filter(player => !checkedCards.has(player.id));
   const mrWhiteFound = players.some(player => checkedCards.has(player.id) && player.isMrWhite);
+  const mrWhitePlayer = players.find(player => player.isMrWhite);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-teal-100 p-4">
@@ -94,6 +96,29 @@ export function Discussion({ players, onCardCheck, checkedCards }: DiscussionPro
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Game Complete!</h2>
               <p className="text-gray-600 mb-4">Mr. White has been successfully identified!</p>
+              
+              {/* Show the words */}
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Game Words Revealed:</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-green-100 border border-green-300 rounded-lg p-4">
+                    <h4 className="font-semibold text-green-800 mb-2">Normal Players' Word:</h4>
+                    <p className="text-2xl font-bold text-green-700">{currentWordPair.normal}</p>
+                  </div>
+                  <div className="bg-red-100 border border-red-300 rounded-lg p-4">
+                    <h4 className="font-semibold text-red-800 mb-2">Mr. White's Word:</h4>
+                    <p className="text-2xl font-bold text-red-700">{currentWordPair.mrWhite}</p>
+                  </div>
+                </div>
+                {mrWhitePlayer && (
+                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-yellow-800">
+                      <strong>{mrWhitePlayer.name}</strong> was Mr. White with the word "{currentWordPair.mrWhite}"
+                    </p>
+                  </div>
+                )}
+              </div>
+              
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <p className="text-green-800 font-semibold">
                   🎉 Congratulations! You found Mr. White!
