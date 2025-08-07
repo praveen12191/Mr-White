@@ -1,157 +1,432 @@
 import React from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  ScrollView,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Player } from '../types/game';
-import { MessageCircle, Eye, Users, Crown, X } from 'lucide-react';
 
 interface DiscussionProps {
   players: Player[];
   onCardCheck: (playerId: string) => void;
   checkedCards: Set<string>;
   currentWordPair: { normal: string; mrWhite: string };
+  onNewGame: () => void;
 }
 
-export function Discussion({ players, onCardCheck, checkedCards, currentWordPair }: DiscussionProps) {
+export function Discussion({ players, onCardCheck, checkedCards, currentWordPair, onNewGame }: DiscussionProps) {
   const remainingPlayers = players.filter(player => !checkedCards.has(player.id));
   const mrWhiteFound = players.some(player => checkedCards.has(player.id) && player.isMrWhite);
   const mrWhitePlayer = players.find(player => player.isMrWhite);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-teal-100 p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-            <MessageCircle className="w-8 h-8 text-green-600" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Discussion Phase</h1>
-          <p className="text-gray-600">
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.header}>
+          <View style={styles.iconContainer}>
+            <Ionicons name="chatbubbles" size={32} color="#10b981" />
+          </View>
+          <Text style={styles.title}>Discussion Phase</Text>
+          <Text style={styles.subtitle}>
             {mrWhiteFound 
               ? "🎉 Mr. White has been found!" 
-              : "Discuss and click on a player's card to guess who is Mr. White!"
+              : "Discuss and tap a player's card to guess who is Mr. White!"
             }
-          </p>
-        </div>
+          </Text>
+        </View>
 
-        {!mrWhiteFound && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
-              <Users className="w-6 h-6" />
-              Click a Player to Guess Mr. White
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {!mrWhiteFound && remainingPlayers.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>
+              <Ionicons name="people" size={20} color="#1f2937" /> Tap to Guess Mr. White
+            </Text>
+            <View style={styles.playersGrid}>
               {remainingPlayers.map((player) => (
-                <div
+                <TouchableOpacity
                   key={player.id}
-                  onClick={() => onCardCheck(player.id)}
-                  className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 text-center cursor-pointer hover:from-blue-100 hover:to-indigo-100 hover:border-blue-300 transition-all duration-200 transform hover:scale-105"
+                  style={styles.playerCard}
+                  onPress={() => onCardCheck(player.id)}
                 >
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <Eye className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900">{player.name}</h3>
-                </div>
+                  <View style={styles.playerIcon}>
+                    <Ionicons name="help" size={24} color="#6b7280" />
+                  </View>
+                  <Text style={styles.playerName}>{player.name}</Text>
+                </TouchableOpacity>
               ))}
-            </div>
-          </div>
+            </View>
+          </View>
         )}
 
-        {/* Show checked players */}
         {checkedCards.size > 0 && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Checked Players</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Checked Players</Text>
+            <View style={styles.playersGrid}>
               {players.filter(player => checkedCards.has(player.id)).map((player) => (
-                <div
+                <View
                   key={player.id}
-                  className={`rounded-lg p-4 text-center border-2 ${
-                    player.isMrWhite 
-                      ? 'bg-gradient-to-r from-red-50 to-red-100 border-red-300' 
-                      : 'bg-gradient-to-r from-gray-50 to-gray-100 border-gray-300'
-                  }`}
+                  style={[
+                    styles.checkedCard,
+                    player.isMrWhite ? styles.mrWhiteCard : styles.notMrWhiteCard
+                  ]}
                 >
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 ${
-                    player.isMrWhite ? 'bg-red-100' : 'bg-gray-100'
-                  }`}>
-                    {player.isMrWhite ? (
-                      <Crown className="w-6 h-6 text-red-600" />
-                    ) : (
-                      <X className="w-6 h-6 text-gray-600" />
-                    )}
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-1">{player.name}</h3>
-                  <p className={`text-sm font-medium ${
-                    player.isMrWhite ? 'text-red-600' : 'text-gray-600'
-                  }`}>
+                  <View style={[
+                    styles.checkedIcon,
+                    player.isMrWhite ? styles.mrWhiteIcon : styles.notMrWhiteIcon
+                  ]}>
+                    <Ionicons
+                      name={player.isMrWhite ? "crown" : "close"}
+                      size={24}
+                      color={player.isMrWhite ? "#dc2626" : "#6b7280"}
+                    />
+                  </View>
+                  <Text style={styles.checkedPlayerName}>{player.name}</Text>
+                  <Text style={[
+                    styles.checkedPlayerStatus,
+                    player.isMrWhite ? styles.mrWhiteStatus : styles.notMrWhiteStatus
+                  ]}>
                     {player.isMrWhite ? '👑 Mr. White!' : '❌ Not Mr. White'}
-                  </p>
-                </div>
+                  </Text>
+                </View>
               ))}
-            </div>
-          </div>
+            </View>
+          </View>
         )}
 
         {mrWhiteFound && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
-                <Crown className="w-10 h-10 text-green-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Game Complete!</h2>
-              <p className="text-gray-600 mb-4">Mr. White has been successfully identified!</p>
-              
-              {/* Show the words */}
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Game Words Revealed:</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-green-100 border border-green-300 rounded-lg p-4">
-                    <h4 className="font-semibold text-green-800 mb-2">Normal Players' Word:</h4>
-                    <p className="text-2xl font-bold text-green-700">{currentWordPair.normal}</p>
-                  </div>
-                  <div className="bg-red-100 border border-red-300 rounded-lg p-4">
-                    <h4 className="font-semibold text-red-800 mb-2">Mr. White's Word:</h4>
-                    <p className="text-2xl font-bold text-red-700">{currentWordPair.mrWhite}</p>
-                  </div>
-                </div>
-                {mrWhitePlayer && (
-                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p className="text-yellow-800">
-                      <strong>{mrWhitePlayer.name}</strong> was Mr. White with the word "{currentWordPair.mrWhite}"
-                    </p>
-                  </div>
-                )}
-              </div>
-              
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p className="text-green-800 font-semibold">
-                  🎉 Congratulations! You found Mr. White!
-                </p>
-              </div>
-            </div>
-          </div>
+          <View style={styles.winSection}>
+            <View style={styles.winHeader}>
+              <View style={styles.winIcon}>
+                <Ionicons name="trophy" size={40} color="#10b981" />
+              </View>
+              <Text style={styles.winTitle}>Game Complete!</Text>
+              <Text style={styles.winSubtitle}>Mr. White has been successfully identified!</Text>
+            </View>
+
+            <View style={styles.wordsReveal}>
+              <Text style={styles.wordsTitle}>Game Words Revealed:</Text>
+              <View style={styles.wordsContainer}>
+                <View style={styles.normalWordCard}>
+                  <Text style={styles.wordCardTitle}>Normal Players' Word:</Text>
+                  <Text style={styles.wordCardText}>{currentWordPair.normal}</Text>
+                </View>
+                <View style={styles.mrWhiteWordCard}>
+                  <Text style={styles.wordCardTitle}>Mr. White's Word:</Text>
+                  <Text style={styles.wordCardText}>{currentWordPair.mrWhite}</Text>
+                </View>
+              </View>
+              {mrWhitePlayer && (
+                <View style={styles.mrWhiteInfo}>
+                  <Text style={styles.mrWhiteInfoText}>
+                    <Text style={styles.bold}>{mrWhitePlayer.name}</Text> was Mr. White with the word "{currentWordPair.mrWhite}"
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.congratulations}>
+              <Text style={styles.congratulationsText}>
+                🎉 Congratulations! You found Mr. White!
+              </Text>
+            </View>
+          </View>
         )}
 
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
-            <MessageCircle className="w-6 h-6" />
-            Game Rules
-          </h2>
-          <div className="space-y-3 text-gray-700">
-            <p>• Most players have the <strong>same word</strong></p>
-            <p>• One player (Mr. White) has a <strong>different but related word</strong></p>
-            <p>• Discuss your words without revealing them directly</p>
-            <p>• Click on a player's card to guess if they are Mr. White</p>
-            <p>• Wrong guesses will eliminate that player from the cards</p>
-            <p>• Find Mr. White to win the game!</p>
-          </div>
-        </div>
+        <View style={styles.rulesSection}>
+          <Text style={styles.rulesTitle}>
+            <Ionicons name="information-circle" size={20} color="#1f2937" /> Game Rules
+          </Text>
+          <View style={styles.rulesList}>
+            <Text style={styles.ruleText}>• Most players have the <Text style={styles.bold}>same word</Text></Text>
+            <Text style={styles.ruleText}>• One player (Mr. White) has a <Text style={styles.bold}>different but related word</Text></Text>
+            <Text style={styles.ruleText}>• Discuss your words without revealing them directly</Text>
+            <Text style={styles.ruleText}>• Tap on a player's card to guess if they are Mr. White</Text>
+            <Text style={styles.ruleText}>• Wrong guesses will eliminate that player from the cards</Text>
+            <Text style={styles.ruleText}>• Find Mr. White to win the game!</Text>
+          </View>
+        </View>
 
-        <div className="text-center">
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200"
-          >
-            New Game
-          </button>
-        </div>
-      </div>
-    </div>
+        <TouchableOpacity style={styles.newGameButton} onPress={onNewGame}>
+          <Text style={styles.newGameButtonText}>New Game</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f0fdf4',
+  },
+  scrollContent: {
+    padding: 20,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  iconContainer: {
+    width: 64,
+    height: 64,
+    backgroundColor: '#dcfce7',
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#6b7280',
+    textAlign: 'center',
+    paddingHorizontal: 20,
+  },
+  section: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  playersGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  playerCard: {
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    minWidth: '45%',
+    flex: 1,
+  },
+  playerIcon: {
+    width: 48,
+    height: 48,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  playerName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1f2937',
+  },
+  checkedCard: {
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    minWidth: '45%',
+    flex: 1,
+    borderWidth: 2,
+  },
+  mrWhiteCard: {
+    backgroundColor: '#fef2f2',
+    borderColor: '#fca5a5',
+  },
+  notMrWhiteCard: {
+    backgroundColor: '#f9fafb',
+    borderColor: '#d1d5db',
+  },
+  checkedIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  mrWhiteIcon: {
+    backgroundColor: '#fee2e2',
+  },
+  notMrWhiteIcon: {
+    backgroundColor: '#f3f4f6',
+  },
+  checkedPlayerName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  checkedPlayerStatus: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  mrWhiteStatus: {
+    color: '#dc2626',
+  },
+  notMrWhiteStatus: {
+    color: '#6b7280',
+  },
+  winSection: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  winHeader: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  winIcon: {
+    width: 80,
+    height: 80,
+    backgroundColor: '#dcfce7',
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  winTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 8,
+  },
+  winSubtitle: {
+    fontSize: 16,
+    color: '#6b7280',
+    textAlign: 'center',
+  },
+  wordsReveal: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 16,
+  },
+  wordsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  wordsContainer: {
+    gap: 12,
+    marginBottom: 16,
+  },
+  normalWordCard: {
+    backgroundColor: '#dcfce7',
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+  },
+  mrWhiteWordCard: {
+    backgroundColor: '#fee2e2',
+    borderWidth: 1,
+    borderColor: '#fca5a5',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+  },
+  wordCardTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  wordCardText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  mrWhiteInfo: {
+    backgroundColor: '#fef3c7',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    borderRadius: 8,
+    padding: 12,
+  },
+  mrWhiteInfoText: {
+    fontSize: 14,
+    color: '#92400e',
+    textAlign: 'center',
+  },
+  bold: {
+    fontWeight: 'bold',
+  },
+  congratulations: {
+    backgroundColor: '#dcfce7',
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+    borderRadius: 8,
+    padding: 16,
+  },
+  congratulationsText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#166534',
+    textAlign: 'center',
+  },
+  rulesSection: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  rulesTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rulesList: {
+    gap: 8,
+  },
+  ruleText: {
+    fontSize: 14,
+    color: '#6b7280',
+    lineHeight: 20,
+  },
+  newGameButton: {
+    backgroundColor: '#3b82f6',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+  },
+  newGameButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+});
