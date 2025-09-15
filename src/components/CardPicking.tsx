@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  ScrollView,
+  Modal,
+  Alert,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Player } from '../types/game';
-import { PlayerCard } from './PlayerCard';
-import { ArrowRight, Eye } from 'lucide-react';
 
 interface CardPickingProps {
   players: Player[];
@@ -15,7 +25,7 @@ export function CardPicking({ players, onPlayerUpdate, canStartGame, onStartDisc
   const [playerName, setPlayerName] = useState('');
   const [showWord, setShowWord] = useState(false);
 
-  const handleCardClick = (playerId: string) => {
+  const handleCardPress = (playerId: string) => {
     const player = players.find(p => p.id === playerId);
     if (player && !player.hasSeenWord) {
       setSelectedCard(playerId);
@@ -24,10 +34,11 @@ export function CardPicking({ players, onPlayerUpdate, canStartGame, onStartDisc
     }
   };
 
-  const handleNameSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (playerName.trim() && selectedCard) {
+  const handleNameSubmit = () => {
+    if (playerName.trim()) {
       setShowWord(true);
+    } else {
+      Alert.alert('Error', 'Please enter your name');
     }
   };
 
@@ -43,104 +54,324 @@ export function CardPicking({ players, onPlayerUpdate, canStartGame, onStartDisc
   const selectedPlayer = players.find(p => p.id === selectedCard);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 p-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Pick Your Card</h1>
-          <p className="text-gray-600">Each player should pick a card to see their secret word</p>
-        </div>
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Pick Your Card</Text>
+          <Text style={styles.subtitle}>Each player should pick a card to see their secret word</Text>
+        </View>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-8">
+        <View style={styles.cardsGrid}>
           {players.map((player, index) => (
-            <PlayerCard
+            <TouchableOpacity
               key={player.id}
-              player={player}
-              cardNumber={index + 1}
-              onClick={() => handleCardClick(player.id)}
-              isSelected={selectedCard === player.id}
-            />
+              style={[
+                styles.card,
+                player.hasSeenWord ? styles.cardUsed : styles.cardAvailable,
+                selectedCard === player.id && styles.cardSelected,
+              ]}
+              onPress={() => handleCardPress(player.id)}
+              disabled={player.hasSeenWord}
+            >
+              <Ionicons
+                name={player.hasSeenWord ? "eye" : "eye-off"}
+                size={32}
+                color={player.hasSeenWord ? "#10b981" : "#ffffff"}
+              />
+              <Text style={[
+                styles.cardText,
+                player.hasSeenWord ? styles.cardTextUsed : styles.cardTextAvailable
+              ]}>
+                {player.hasSeenWord ? player.name : `Card ${index + 1}`}
+              </Text>
+            </TouchableOpacity>
           ))}
-        </div>
+        </View>
 
-        {/* Player List */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Players Joined:</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        <View style={styles.playersSection}>
+          <Text style={styles.sectionTitle}>Players Joined:</Text>
+          <View style={styles.playersList}>
             {players.filter(p => p.hasSeenWord).map((player) => (
-              <div key={player.id} className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
-                <Eye className="w-4 h-4 text-green-600" />
-                <span className="text-sm font-medium text-gray-900">{player.name}</span>
-              </div>
+              <View key={player.id} style={styles.playerItem}>
+                <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                <Text style={styles.playerName}>{player.name}</Text>
+              </View>
             ))}
-          </div>
-          {players.filter(p => p.hasSeenWord).length === 0 && (
-            <p className="text-gray-500 text-sm">No players have joined yet</p>
-          )}
-        </div>
+            {players.filter(p => p.hasSeenWord).length === 0 && (
+              <Text style={styles.noPlayersText}>No players have joined yet</Text>
+            )}
+          </View>
+        </View>
 
         {canStartGame && (
-          <div className="text-center">
-            <button
-              onClick={onStartDiscussion}
-              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 mx-auto"
-            >
-              Start Discussion
-              <ArrowRight className="w-5 h-5" />
-            </button>
-          </div>
+          <TouchableOpacity style={styles.startButton} onPress={onStartDiscussion}>
+            <Text style={styles.startButtonText}>Start Discussion</Text>
+            <Ionicons name="arrow-forward" size={20} color="white" />
+          </TouchableOpacity>
         )}
+      </ScrollView>
 
-        {/* Modal for name input and word display */}
-        {selectedCard && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-              {!showWord ? (
-                <form onSubmit={handleNameSubmit}>
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Enter Your Name</h3>
-                  <input
-                    type="text"
-                    value={playerName}
-                    onChange={(e) => setPlayerName(e.target.value)}
-                    placeholder="Your name"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4"
-                    autoFocus
-                  />
-                  <div className="flex gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCard(null)}
-                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={!playerName.trim()}
-                      className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-lg transition-colors"
-                    >
-                      Continue
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div className="text-center">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Your Secret Word</h3>
-                  <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white text-2xl font-bold py-6 px-4 rounded-lg mb-6">
-                    {selectedPlayer?.word}
-                  </div>
-                  <p className="text-gray-600 mb-6">Remember this word and keep it secret!</p>
-                  <button
-                    onClick={handleWordSeen}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+      <Modal
+        visible={selectedCard !== null}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setSelectedCard(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            {!showWord ? (
+              <>
+                <Text style={styles.modalTitle}>Enter Your Name</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  value={playerName}
+                  onChangeText={setPlayerName}
+                  placeholder="Your name"
+                  placeholderTextColor="#9ca3af"
+                  autoFocus
+                />
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={styles.modalButtonSecondary}
+                    onPress={() => setSelectedCard(null)}
                   >
-                    Got it!
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+                    <Text style={styles.modalButtonSecondaryText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalButtonPrimary, !playerName.trim() && styles.modalButtonDisabled]}
+                    onPress={handleNameSubmit}
+                    disabled={!playerName.trim()}
+                  >
+                    <Text style={styles.modalButtonPrimaryText}>Continue</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            ) : (
+              <>
+                <Text style={styles.modalTitle}>Your Secret Word</Text>
+                <View style={styles.wordContainer}>
+                  <Text style={styles.wordText}>{selectedPlayer?.word}</Text>
+                </View>
+                <Text style={styles.wordHint}>Remember this word and keep it secret!</Text>
+                <TouchableOpacity style={styles.gotItButton} onPress={handleWordSeen}>
+                  <Text style={styles.gotItButtonText}>Got it!</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fdf4ff',
+  },
+  scrollContent: {
+    padding: 20,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#6b7280',
+    textAlign: 'center',
+  },
+  cardsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 32,
+  },
+  card: {
+    width: '48%',
+    aspectRatio: 1.5,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cardAvailable: {
+    backgroundColor: '#3b82f6',
+  },
+  cardUsed: {
+    backgroundColor: '#10b981',
+  },
+  cardSelected: {
+    borderWidth: 3,
+    borderColor: '#1d4ed8',
+  },
+  cardText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  cardTextAvailable: {
+    color: 'white',
+  },
+  cardTextUsed: {
+    color: 'white',
+  },
+  playersSection: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 16,
+  },
+  playersList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  playerItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0fdf4',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    gap: 8,
+  },
+  playerName: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#1f2937',
+  },
+  noPlayersText: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontStyle: 'italic',
+  },
+  startButton: {
+    backgroundColor: '#10b981',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  startButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    padding: 16,
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButtonSecondary: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+  },
+  modalButtonSecondaryText: {
+    color: '#374151',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  modalButtonPrimary: {
+    flex: 1,
+    backgroundColor: '#3b82f6',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+  },
+  modalButtonDisabled: {
+    backgroundColor: '#d1d5db',
+  },
+  modalButtonPrimaryText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  wordContainer: {
+    backgroundColor: '#3b82f6',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  wordText: {
+    color: 'white',
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  wordHint: {
+    fontSize: 16,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  gotItButton: {
+    backgroundColor: '#10b981',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+  },
+  gotItButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
