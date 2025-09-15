@@ -10,7 +10,7 @@ interface GameSetupProps {
 export function GameSetup({ playerCount, setPlayerCount, onStartGame }: GameSetupProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (playerCount >= 4 && playerCount <= 10) {
+    if (playerCount >= 4 && playerCount <= 25) {
       onStartGame(playerCount);
     }
   };
@@ -35,7 +35,7 @@ export function GameSetup({ playerCount, setPlayerCount, onStartGame }: GameSetu
               type="number"
               id="playerCount"
               min="4"
-              max="10"
+              max="25"
               value={playerCount}
               onChange={(e) => setPlayerCount(parseInt(e.target.value))}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
