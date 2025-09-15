@@ -10,7 +10,7 @@ interface GameSetupProps {
 export function GameSetup({ playerCount, setPlayerCount, onStartGame }: GameSetupProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (playerCount >= 4 && playerCount <= 10) {
+    if (playerCount >= 4 && playerCount <= 25) {
       onStartGame(playerCount);
     }
   };
@@ -23,7 +23,7 @@ export function GameSetup({ playerCount, setPlayerCount, onStartGame }: GameSetu
             <Users className="w-8 h-8 text-blue-600" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">MrWhitey</h1>
-          <p className="text-gray-600">The ultimate word guessing game ()</p>
+          <p className="text-gray-600">The ultimate word guessing game</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -35,18 +35,18 @@ export function GameSetup({ playerCount, setPlayerCount, onStartGame }: GameSetu
               type="number"
               id="playerCount"
               min="4"
-              max="10"
+              max="25"
               value={playerCount}
               onChange={(e) => setPlayerCount(parseInt(e.target.value))}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               placeholder="Enter number of players (4-10)"
             />
-            <p className="text-sm text-gray-500 mt-1">Minimum 4, Maximum 10 players</p>
+            <p className="text-sm text-gray-500 mt-1">Minimum 4, Maximum 25 players</p>
           </div>
 
           <button
             type="submit"
-            disabled={playerCount < 4 || playerCount > 10}
+            disabled={playerCount < 4 || playerCount > 25}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
           >
             <Play className="w-5 h-5" />
