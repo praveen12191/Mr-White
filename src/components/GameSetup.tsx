@@ -39,14 +39,14 @@ export function GameSetup({ playerCount, setPlayerCount, onStartGame }: GameSetu
               value={playerCount}
               onChange={(e) => setPlayerCount(parseInt(e.target.value))}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-              placeholder="Enter number of players (4-10)"
+              placeholder="Enter number of players (3-25)"
             />
             <p className="text-sm text-gray-500 mt-1">Minimum 3, Maximum 25 players</p>
           </div>
 
           <button
             type="submit"
-            disabled={playerCount < 4 || playerCount > 25}
+            disabled={playerCount < 3 || playerCount > 25}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
           >
             <Play className="w-5 h-5" />
